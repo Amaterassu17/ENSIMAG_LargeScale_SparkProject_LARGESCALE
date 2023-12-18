@@ -1,9 +1,14 @@
 import sys
+
+import findspark
+findspark.init()
+
 from pyspark import SparkContext
 import time
 import re
 import os
 import matplotlib.pyplot as plt
+import time
 
 
 #Utility functions
@@ -58,7 +63,9 @@ entries.cache()
 # 4 -> capacity: number of CPUs
 # 5 -> memory
 
+start_time = time.time()
 cpus_mapped = wholeFile.map(lambda x: (extract_column(x,1),extract_column(x, 4))).reduceByKey(lambda x,y: x).map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).sortBy(lambda x: x[0]).cache();
+elapsed_time = time.time() - start_time
 
 #map result into a list
 cpus_mapped.saveAsTextFile("./results/question1/cpus_mapped")
@@ -67,6 +74,7 @@ cpus_mapped = cpus_mapped.collect()
 cpu_capabilities, quantities = zip(*cpus_mapped)
 
 print(cpus_mapped)
+print("Computation time: " + str(round(elapsed_time, 2)) + "s")
 
 plt.bar(cpu_capabilities, quantities, align='center', alpha=0.5, color='green')
 # plt.hist(cpus_mapped, bins ='auto', alpha=0.7, color='b', label = 'CPU capabilities')
