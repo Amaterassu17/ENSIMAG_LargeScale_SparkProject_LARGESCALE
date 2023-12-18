@@ -122,19 +122,27 @@ entries.cache()
 
 #accumulator for total downtime
 
+# we filter the '' values since they don't bring any value to the computation
 step1 = wholeFile.map(lambda x : ((int(extract_column(x, 0))), (int(extract_column(x,1)),int(extract_column(x,2))))).cache()
+step1_alt = wholeFile.filter(lambda x: extract_column(x, 4) != '').map(lambda x : ((int(extract_column(x, 0))), (int(extract_column(x,1)),int(extract_column(x,2)),float(extract_column(x,4))))).cache()
 
 timestamps = step1.filter(lambda x: x[0] != 0).sortBy(lambda x: x[0]).cache()
+timestamps_1 = step1_alt.filter(lambda x: x[0] != 0).sortBy(lambda x: x[0]).cache()
 machine_count = step1.filter(lambda x: x[0] == 0).map(lambda x: x[1][0]).distinct().count()
 
+#distribution of machine power computation as computed in question 1
+# '' -> 32, '0.25' -> 123, '0.5' --> 11632, '1' -> 796)
 
 
 timestamps_maximum = timestamps.sortBy(lambda x: x[0], False).first()[0]
 total_timestamps = timestamps_maximum * machine_count
+
+total_timestamps_weighted = timestamps_maximum * 32 * 0 + timestamps_maximum * 0.25 * 123 + timestamps_maximum * 0.5 * 11632 + timestamps_maximum * 1 * 796
 print(total_timestamps)
 
 timestamps_minimum = 0 #we can modify this
 machine_and_timestamps = timestamps.map(lambda x: (x[1][0], (x[0], x[1][1], 0))).cache()
+machine_and_timestamps_2 = timestamps_1.map(lambda x: (x[1][0], (x[0], x[1][1], 0, x[1][2]))).cache()
 
 def function1(x,y):
 
@@ -149,12 +157,41 @@ def function1(x,y):
         return (timestamp_1, event_type_1, count_1+ (timestamp_1 - timestamp_0))
     else:
         return (timestamp_1, event_type_1, count_1)
+    
+
+def function2(x,y):
+
+    print(x)
+    print(y)
+
+    timestamp_0 = x[0]
+    timestamp_1 = y[0]
+    event_type_0 = x[1]
+    event_type_1 = y[1]
+    count_0 = x[2]
+    count_1 = y[2]
+    cpu_0 = x[3]
+    cpu_1 = y[3]
+
+    if(timestamp_1 > timestamp_0 and event_type_0 == 1 and event_type_1 == 0):
+        return (timestamp_1, event_type_1, count_1+ (timestamp_1 - timestamp_0)* cpu_1, cpu_1)
+    else:
+        return (timestamp_1, event_type_1, count_1, cpu_1)
 
 
 
 something = machine_and_timestamps.reduceByKey(function1).map(lambda x: (None, x[0])).reduceByKey(lambda x,y: x+y).map(lambda x: x[1]).collect()[0]
+
+something_2 = machine_and_timestamps_2.reduceByKey(function2).map(lambda x: (None, x[0])).reduceByKey(lambda x,y: x+y).map(lambda x: x[1]).collect()[0]
+
+
+
+#something_2
+
 downtime_percentage = 100 * something / total_timestamps
+downtime_percentage_2 = 100 * something_2 / total_timestamps
 print(downtime_percentage)
+print(downtime_percentage_2)
 
 
 
