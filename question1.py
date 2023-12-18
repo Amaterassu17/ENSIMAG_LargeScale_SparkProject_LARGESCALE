@@ -58,7 +58,7 @@ entries.cache()
 # 4 -> capacity: number of CPUs
 # 5 -> memory
 
-cpus_mapped = wholeFile.map(lambda x: extract_column(x, 4)).map(lambda x: (x, 1)).reduceByKey(lambda x, y: x + y).sortBy(lambda x: x[0]).cache();
+cpus_mapped = wholeFile.map(lambda x: (extract_column(x,1),extract_column(x, 4))).reduceByKey(lambda x,y: x).map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).sortBy(lambda x: x[0]).cache();
 
 #map result into a list
 cpus_mapped.saveAsTextFile("./results/question1/cpus_mapped")
