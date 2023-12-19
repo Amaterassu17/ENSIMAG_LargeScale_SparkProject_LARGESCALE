@@ -36,7 +36,7 @@ sc.setLogLevel("ERROR")
 os.system("rm -rf ./results/question4")
 
 #Depends on the file, we load the CSV file
-wholeFile = sc.textFile("./data/task_events/*.csv")
+wholeFile = sc.textFile("./data/task_events/part-00001-of-00500.csv")
 
 #The first line of the file defines the name of each column in the cvs file
 #We store it as an array in the driver program
@@ -79,6 +79,8 @@ step1 = scheduled_events.reduceByKey(function1).cache()
 step2 = step1.map(lambda x : (x[0][2], 1)).reduceByKey(lambda x, y: x+y).sortBy(lambda x: x[0]).collect()
 step3= step1.map(lambda x: (x[0][2], x[1][1])).reduceByKey(lambda x,y : x+1).sortBy(lambda x: x[0]).collect()
 
+print(step2)
+print(step3)
 
 #for every scheduling class we compute the probability of eviction
 
@@ -89,7 +91,7 @@ for i in range(len(step2)):
 print(probabilities)
 
 # The probabilities for all the scheduling are
-# [0.0014897236153862004, 0.0016651736250952215, 0.002602749797808985, 0.010275224566534364]
+# [0.0014897236153862004, 0.0016651736250952215, 0.002602749797808985, 0.010275224566534364] to mupltiply by 100 to get the percentage
 #It was tough
 
 
