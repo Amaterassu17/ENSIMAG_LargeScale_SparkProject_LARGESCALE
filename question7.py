@@ -20,11 +20,12 @@ sc = SparkContext("local[*]")
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
-os.system("rm -rf ./results/question6")
-os.system("mkdir ./results/question6")
+os.system("rm -rf ./results/question7")
+os.system("mkdir ./results/question7")
+
 #Depends on the file, we load the CSV file
-wholeFile1 = sc.textFile("./data/task_events/part-000*-of-00500.csv")
-wholeFile2 = sc.textFile("./data/task_usage/part-000*-of-00500.csv")
+wholeFile1 = sc.textFile("./data/task_events/part-00000-of-00500.csv")
+wholeFile2 = sc.textFile("./data/task_usage/part-00000-of-00500.csv")
 
 #The first line of the file defines the name of each column in the cvs file
 #We store it as an array in the driver program
@@ -40,26 +41,20 @@ wholeFile2 = sc.textFile("./data/task_usage/part-000*-of-00500.csv")
 entries1 = wholeFile1.map(lambda x: x.split(','))
 entries2 = wholeFile2.map(lambda x: x.split(','))
 
-table1 = entries1.filter(lambda x: x[9]!='').map(lambda x: ((x[2], x[3], x[4]), (x[9], x[10], x[11])))
-table2 = entries2.map(lambda x: ((x[2], x[3], x[4]), (x[5], x[6], x[12])))
-table = table1.join(table2).map(lambda x: (x[0], (x[1][0][0], x[1][0][1], x[1][0][2], x[1][1][0], x[1][1][1], x[1][1][2]))).sortBy(lambda x: x[1][0], ascending=False).take(200)
-
-print(table)
-
-#print in a csv file as a table with the columns name: jobId, taskIndex, machineId, ReqCPU, ReqMem, ReqDisk, CPU, Mem, Disk
-
-with open("./results/question6/joinedTabledSortedByCPU.csv", "w") as f:
-    f.write("jobId,taskIndex,machineId,ReqCPU,ReqMem,ReqDisk,CPU,Mem,Disk\n")
-    for line in table:
-        f.write(line[0][0]+","+line[0][1]+","+line[0][2]+","+line[1][0]+","+line[1][1]+","+line[1][2]+","+line[1][3]+","+line[1][4]+","+line[1][5]+"\n")
-
-#save the RDD as a text file
 
 
 
 #keep the RDD in memory
 entries1.cache()
+table1 = entries1.filter(lambda x: x[9]!='' and x[5] == '2').map(lambda x: ((x[2], x[3], x[4]), (x[0], x[1])))
+table2 = entries2.map(lambda x: ((x[2], x[3], x[4]), (x[13], x[10], x[14])))
 
+table = table1.join(table2).map(lambda x: (x[0], (x[1][0][0], x[1][0][1], x[1][1][0], x[1][1][1], x[1][1][2]))).sortBy(lambda x: x[1][2], ascending=False).sortBy(lambda x: x[1][1], ascending=False).sortBy(lambda x: x[1][0], ascending=False).take(200)
+
+with open("./results/question7/joinedTablesSortedByCPU.csv", "w") as f:
+    f.write("jobId,taskIndex,machineId,startTime, endTime, maxCPU, maxMem, maxDisk\n")
+    for line in table:
+        f.write(line[0][0]+","+line[0][1]+","+line[0][2]+","+line[1][0]+","+line[1][1]+","+line[1][2]+","+line[1][3]+","+line[1][4]+"\n")
 
 #### HERE THE FUN BEGINS
 # 0 -> time
