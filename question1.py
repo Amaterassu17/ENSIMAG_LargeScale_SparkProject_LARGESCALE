@@ -64,7 +64,7 @@ entries.cache()
 # 5 -> memory
 
 start_time = time.time()
-cpus_mapped = wholeFile.map(lambda x: (extract_column(x,1),extract_column(x, 4))).reduceByKey(lambda x,y: x).map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).sortBy(lambda x: x[0]).cache();
+cpus_mapped = wholeFile.map(lambda x: (extract_column(x,1),extract_column(x, 4))).distinct().map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).sortBy(lambda x: x[0]).cache();
 elapsed_time = time.time() - start_time
 
 #map result into a list

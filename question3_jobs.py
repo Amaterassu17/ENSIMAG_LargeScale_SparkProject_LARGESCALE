@@ -71,6 +71,7 @@ plt.bar(scheduling_class, frequency, align='center', alpha=0.5, color='green')
 plt.xlabel('Scheduling class')
 plt.ylabel('Number of jobs')
 plt.title('Number of jobs per scheduling class')
+plt.xticks(range(len(scheduling_class)), range(len(scheduling_class)))
 plt.savefig('./results/question3/job/number_of_jobs_per_scheduling_class.png')
 plt.show()
 
