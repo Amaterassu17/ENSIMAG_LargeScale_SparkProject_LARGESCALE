@@ -65,7 +65,7 @@ entries.cache()
 
 start_time = time.time()
 
-#just to try
+#just to try ((jobID, taskIndex, schedulingClass), (eventType, 0))
 scheduled_events = entries.map( lambda x: ((int(x[2]),int(x[3]), int(x[7])), (int(x[5]), 0))).cache()
 
 def function1(x, y):
@@ -76,17 +76,17 @@ def function1(x, y):
 
 step1 = scheduled_events.reduceByKey(function1).cache()
 
-step2 = step1.map(lambda x : (x[0][2], 1)).reduceByKey(lambda x, y: x+y).sortBy(lambda x: x[0]).collect()
-step3= step1.map(lambda x: (x[0][2], x[1][1])).reduceByKey(lambda x,y : x+1).sortBy(lambda x: x[0]).collect()
+number_of_tasks_per_sched_class = step1.map(lambda x : (x[0][2], 1)).reduceByKey(lambda x, y: x+y).sortBy(lambda x: x[0]).collect()
+number_of_evictions_per_sched_class = step1.map(lambda x: (x[0][2], x[1][1])).reduceByKey(lambda x,y : x+1).sortBy(lambda x: x[0]).collect()
 
-print(step2)
-print(step3)
+print(number_of_tasks_per_sched_class)
+print(number_of_evictions_per_sched_class)
 
 #for every scheduling class we compute the probability of eviction
 
 probabilities = []
-for i in range(len(step2)):
-    probabilities.append(step3[i][1]/step2[i][1])
+for i in range(len(number_of_tasks_per_sched_class)):
+    probabilities.append(number_of_evictions_per_sched_class[i][1]/number_of_tasks_per_sched_class[i][1])
 
 print(probabilities)
 
