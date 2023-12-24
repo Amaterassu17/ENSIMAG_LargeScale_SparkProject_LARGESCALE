@@ -56,11 +56,40 @@ entries.cache()
 # 4 -> capacity: number of CPUs
 # 5 -> memory
 
-count_jobs = entries.map(lambda x: (x[2], 1)).reduceByKey(lambda x,y: x+y)
-print(count_jobs)
+jobs_count = entries.map(lambda x: (x[2])).distinct().count()
 
-job_and_machines = entries.map(lambda x: ((x[2], x[4]), 1)).reduceByKey(lambda x,y: x+y).map(lambda x: (x[0][0], x[1])).reduceByKey(lambda x,y: max(x,y)).map(lambda x: (x[0], (x[1], 1))).reduceByKey(lambda x,y: (x[0]+y[0], x[1]+y[1])).map(lambda x: (x[0], int(x[1][0]/x[1][1]))).sortByKey().take(10)
-print(job_and_machines)
+# job_and_machines = entries.map(lambda x: ((x[2], x[4]), 1)).reduceByKey(lambda x,y: x+y).map(lambda x: (x[0][0], x[1])).reduceByKey(lambda x,y: max(x,y)).map(lambda x: (x[0], (x[1], 1))).reduceByKey(lambda x,y: (x[0]+y[0], x[1]+y[1])).map(lambda x: (x[0], int(x[1][0]/x[1][1]))).sortByKey().take(10)
+# print(job_and_machines)
+
+tasks = entries.map(lambda x: (x[2], x[4], x[3])).distinct()
+
+tasks_per_job = tasks.map(lambda x: ((x[0]), [x[1]])).reduceByKey(lambda x, y: x + y)
+
+def same_machine_checker(machines, threshold):
+    return len(set(machines)) <= threshold
+    
+
+thresholds = [1, 2, 5, 10, 20]
+results = []
+for threshold in thresholds:
+    res = tasks_per_job.mapValues(lambda machine: same_machine_checker(machine, threshold))
+    # Counting true values, meaning the machines used for the job are the same 
+    true_count = res.filter(lambda x: x[1] == True).count()
+    results.append(100.0 * true_count / jobs_count)
+
+
+plt.bar(thresholds, results, align='center', alpha=0.5, color='green')
+
+plt.xlabel('Number of unique machines')
+plt.ylabel('Percentage of tasks on same machine(s)')
+plt.title('Percentage of tasks on the same machine(s) for different number of unique machines')
+plt.xticks(thresholds)
+
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.tight_layout()
+plt.show()
+
+
 
 
 sc.stop()
