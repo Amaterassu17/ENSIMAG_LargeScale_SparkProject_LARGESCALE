@@ -66,10 +66,10 @@ tasks = entries.map(lambda x: (x[2], x[4], x[3])).distinct()
 tasks_per_job = tasks.map(lambda x: ((x[0]), [x[1]])).reduceByKey(lambda x, y: x + y)
 
 def same_machine_checker(machines, threshold):
-    return len(set(machines)) <= threshold
+    return len(set(machines)) == threshold
     
 
-thresholds = [1, 2, 5, 10, 20]
+thresholds = range(1, 21)
 results = []
 for threshold in thresholds:
     res = tasks_per_job.mapValues(lambda machine: same_machine_checker(machine, threshold))
@@ -81,8 +81,8 @@ for threshold in thresholds:
 plt.bar(thresholds, results, align='center', alpha=0.5, color='green')
 
 plt.xlabel('Number of unique machines')
-plt.ylabel('Percentage of tasks on same machine(s)')
-plt.title('Percentage of tasks on the same machine(s) for different number of unique machines')
+plt.ylabel('Percentage of jobs having their tasks running on same machine(s)')
+plt.title('Percentage of jobs\' tasks on the same machine(s) for different number of unique machines')
 plt.xticks(thresholds)
 
 plt.grid(axis='y', linestyle='--', alpha=0.7)
