@@ -19,22 +19,16 @@ def findCol(firstLine, name):
     else:
         return -1
     
-def extract_column(line, column_index):
-    # Split the line into a list of values
-    values = line.split(',')
-    
-    # Return the desired column based on the index
-    return values[column_index]
-    
 
 #### Driver program
-    
-sc = SparkContext("local[*]")
+localVar = 10
+#localVar = *
+sc = SparkContext("local[" + str(localVar) + "]")
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
 os.system("rm -rf ./results/question3/task")
-
+os.system("mkdir ./results/question3/task")
 #Depends on the file, we load the CSV file
 wholeFile = sc.textFile("./data/task_events/*.csv")
 
@@ -56,11 +50,14 @@ start = time.time()
 number_per_scheduling = entries.map(lambda x: (int(x[7]),1)).reduceByKey(lambda x,y: x+y).sortBy(lambda x: x[0]).cache()
 end= time.time()
 
+duration = end - start
 
 print("Time for the first part: {}".format(end-start))
-number_per_scheduling.saveAsTextFile("./results/question3/task/answer")
+number_per_scheduling.saveAsTextFile("./results/question3/task/splitResults")
 number_collected = number_per_scheduling.collect()
 
+with open("./results/question3/task/time_computation.txt", 'f') as f:
+    f.write(str(duration) + "s")
 
 scheduling_class, frequency = zip(*number_collected)
 

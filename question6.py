@@ -16,7 +16,8 @@ import time
 
 #### Driver program
     
-sc = SparkContext("local[*]")
+localVar = 10
+sc = SparkContext("local["+ str(localVar) + "]")
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
@@ -40,9 +41,13 @@ wholeFile2 = sc.textFile("./data/task_usage/part-000*-of-00500.csv")
 entries1 = wholeFile1.map(lambda x: x.split(','))
 entries2 = wholeFile2.map(lambda x: x.split(','))
 
+start = time.time()
 table1 = entries1.filter(lambda x: x[9]!='').map(lambda x: ((x[2], x[3], x[4]), (x[9], x[10], x[11])))
 table2 = entries2.map(lambda x: ((x[2], x[3], x[4]), (x[5], x[6], x[12])))
 table = table1.join(table2).map(lambda x: (x[0], (x[1][0][0], x[1][0][1], x[1][0][2], x[1][1][0], x[1][1][1], x[1][1][2]))).sortBy(lambda x: x[1][0], ascending=False).take(200)
+end = time.time()
+
+duration = end - start
 
 print(table)
 
@@ -53,6 +58,8 @@ with open("./results/question6/joinedTabledSortedByCPU.csv", "w") as f:
     for line in table:
         f.write(line[0][0]+","+line[0][1]+","+line[0][2]+","+line[1][0]+","+line[1][1]+","+line[1][2]+","+line[1][3]+","+line[1][4]+","+line[1][5]+"\n")
 
+with open("./results/question6/computationTime.txt", "w"):
+    f.write(str(duration))
 #save the RDD as a text file
 
 

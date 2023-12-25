@@ -18,35 +18,23 @@ def findCol(firstLine, name):
         return firstLine.index(name)
     else:
         return -1
-    
-def extract_column(line, column_index):
-    # Split the line into a list of values
-    values = line.split(',')
-    
-    # Return the desired column based on the index
-    return values[column_index]
+
     
 
 #### Driver program
     
-sc = SparkContext("local[1]")
+localVar = 10
+#localVar = *
+sc = SparkContext("local[" + str(localVar) + "]")
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
 os.system("rm -rf ./results/question1")
+os.system("mkdir ./results/question1")
 
 #Depends on the file, we load the CSV file
-wholeFile = sc.textFile("./data/machine_events/part-00000-of-00001.csv")
+wholeFile = sc.textFile("./data/machine_events/*.csv")
 
-#The first line of the file defines the name of each column in the cvs file
-#We store it as an array in the driver program
-
-
-#WE HAVE TO CHANGE SOMETHING HERE ETI ;)
-#firstLine =wholeFile.filter(lambda x: "RecID" in x).collect()[0].replace('"', '').split(',')
-
-#filter out the first line from the initial RDD
-# entries = wholeFile.filter(lambda x: not ("RecID" in x))
 
 #split each line into an array of items
 entries = wholeFile.map(lambda x: x.split(','))
@@ -55,7 +43,7 @@ entries = wholeFile.map(lambda x: x.split(','))
 entries.cache()
 
 
-#### HERE THE FUN BEGINS
+
 # 0 -> time
 # 1 -> machine ID
 # 2 -> event type
@@ -64,11 +52,11 @@ entries.cache()
 # 5 -> memory
 
 start_time = time.time()
-cpus_mapped = wholeFile.map(lambda x: (extract_column(x,1),extract_column(x, 4))).distinct().map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).sortBy(lambda x: x[0]).cache();
+cpus_mapped = entries.map(lambda x: (int(x[1]),x[4])).distinct().map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).sortBy(lambda x: x[0]).cache();
 elapsed_time = time.time() - start_time
 
 #map result into a list
-cpus_mapped.saveAsTextFile("./results/question1/cpus_mapped")
+cpus_mapped.saveAsTextFile("./results/question1/splitResults")
 cpus_mapped = cpus_mapped.collect()
 
 cpu_capabilities, quantities = zip(*cpus_mapped)
@@ -76,6 +64,11 @@ cpu_capabilities, quantities = zip(*cpus_mapped)
 print(cpus_mapped)
 print("Computation time: " + str(round(elapsed_time, 2)) + "s")
 
+with open('./results/question1/time_computation' + str(localVar) + '.txt', 'w') as f:
+    f.write("TimeComputation: " + str(round(elapsed_time, 2)) + "s")
+
+
+#Graph part
 plt.bar(cpu_capabilities, quantities, align='center', alpha=0.5, color='green')
 # plt.hist(cpus_mapped, bins ='auto', alpha=0.7, color='b', label = 'CPU capabilities')
 plt.xlabel('CPU capabilities')

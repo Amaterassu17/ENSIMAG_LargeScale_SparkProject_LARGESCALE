@@ -16,7 +16,8 @@ import math
 
 #### Driver program
     
-sc = SparkContext("local[*]")
+localVar = 10
+sc = SparkContext("local["+ str(localVar) + "]")
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
@@ -95,6 +96,7 @@ def functionMap(x):
 
 #step1 = entries1.map(lambda x: ((x[1]), (int(x[0]), int(x[2])))).sortBy(lambda x: x[1][0], ascending=True).groupByKey().map(lambda x: (x[0], list(x[1]))).map(lambda x: functionMap(x)).cache()
 
+start = time.time()
 step1 = entries1.map(lambda x: ((x[1]), (int(x[0]), int(x[2])))).sortBy(lambda x: x[1][0], ascending=True).groupByKey().map(lambda x: (x[0], list(x[1]))).map(lambda x: functionMap(x)).cache()
 
 
@@ -117,6 +119,9 @@ availability100points = []
 
 availability100points = availability_tasks.reduceByKey(lambda x,y: (x[0]+y[0], x[1]+y[1])).map(lambda x: (x[0], x[1][0]/x[1][1])).sortBy(lambda x: x[0]).collect()
 print(availability100points)
+end = time.time()
+
+duration = end - start
 
 # for i in range(100):
 #     availability100points.append((i,0))
@@ -142,6 +147,9 @@ with open("./results/question8/availability100points.csv", "w") as f:
     for i in range(len(availability100points)):
         f.write(str(availability100points[i][0])+","+str(availability100points[i][1])+"\n")
 
+
+with open("./results/question8/computationTimes.txt", "w") as f:
+    f.write(str(duration))
 
 # plotting a graph with availability100points as a list of (x,y) points
 plt.plot(*zip(*availability100points), marker='', color='r', ls='-')

@@ -18,35 +18,24 @@ def findCol(firstLine, name):
         return firstLine.index(name)
     else:
         return -1
-    
-def extract_column(line, column_index):
-    # Split the line into a list of values
-    values = line.split(',')
-    
-    # Return the desired column based on the index
-    return values[column_index]
+
     
 
 #### Driver program
     
-sc = SparkContext("local[*]")
+
+localVar = 10
+#localVar = *
+   
+sc = SparkContext("local["+ str(localVar) + "]")
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
 os.system("rm -rf ./results/question4")
-
+os.system("mkdir ./results/question4")
 #Depends on the file, we load the CSV file
 wholeFile = sc.textFile("./data/task_events/part-00001-of-00500.csv")
 
-#The first line of the file defines the name of each column in the cvs file
-#We store it as an array in the driver program
-
-
-#WE HAVE TO CHANGE SOMETHING HERE ETI ;)
-#firstLine =wholeFile.filter(lambda x: "RecID" in x).collect()[0].replace('"', '').split(',')
-
-#filter out the first line from the initial RDD
-# entries = wholeFile.filter(lambda x: not ("RecID" in x))
 
 #split each line into an array of items
 entries = wholeFile.map(lambda x: x.split(','))
@@ -89,6 +78,11 @@ for i in range(len(number_of_tasks_per_sched_class)):
     probabilities.append(number_of_evictions_per_sched_class[i][1]/number_of_tasks_per_sched_class[i][1])
 
 print(probabilities)
+elapsed_time = time.time() - start_time
+with open("./results/question4/probabilities", 'w') as f:
+    for i in (range(len(probabilities))):
+        f.write(str(i) + ": " + str(probabilities[i]))
+
 
 # The probabilities for all the scheduling are
 # [0.0014897236153862004, 0.0016651736250952215, 0.002602749797808985, 0.010275224566534364] to mupltiply by 100 to get the percentage
@@ -106,7 +100,7 @@ print(probabilities)
 # count_number_tasks_per_scheduling_class = evicted_events.map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).cache()
 # count_events_per_scheduling = evicted_events.map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).cache()
 
-elapsed_time = time.time() - start_time
+
 
 #map result into a list
 

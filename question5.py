@@ -19,15 +19,15 @@ def findCol(firstLine, name):
     else:
         return -1
     
-
 #### Driver program
-    
+
+localVar = 10
 sc = SparkContext("local[*]")
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
 os.system("rm -rf ./results/question5")
-
+os.system("mkdir ./results/question5")
 #Depends on the file, we load the CSV file
 wholeFile = sc.textFile("./data/task_events/*.csv")
 
@@ -56,6 +56,7 @@ entries.cache()
 # 4 -> capacity: number of CPUs
 # 5 -> memory
 
+start_time = time.time()
 jobs_count = entries.map(lambda x: (x[2])).distinct().count()
 
 # job_and_machines = entries.map(lambda x: ((x[2], x[4]), 1)).reduceByKey(lambda x,y: x+y).map(lambda x: (x[0][0], x[1])).reduceByKey(lambda x,y: max(x,y)).map(lambda x: (x[0], (x[1], 1))).reduceByKey(lambda x,y: (x[0]+y[0], x[1]+y[1])).map(lambda x: (x[0], int(x[1][0]/x[1][1]))).sortByKey().take(10)
@@ -77,6 +78,12 @@ for threshold in thresholds:
     true_count = res.filter(lambda x: x[1] == True).count()
     results.append(100.0 * true_count / jobs_count)
 
+end_time = time.time()
+
+duration = end_time - start_time
+
+with open("./results/question5/time_computation.txt", "w") as f:
+    f.write(str(duration) + " s")
 
 plt.bar(thresholds, results, align='center', alpha=0.5, color='green')
 
