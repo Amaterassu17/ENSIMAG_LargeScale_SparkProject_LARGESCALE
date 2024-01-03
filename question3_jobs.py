@@ -32,15 +32,15 @@ os.system("mkdir ./results/question3/job")
 #Depends on the file, we load the CSV file
 wholeFile = sc.textFile("./data/job_events/*.csv")
 
-#The first line of the file defines the name of each column in the cvs file
-#We store it as an array in the driver program
+# 0 -> timestamp,
+# 1 -> missing info, 
+# 2 -> job ID, 
+# 3 -> event type, 
+# 4 -> user name, 
+# 5 -> scheduling class, 
+# 6 -> job name, 
+# 7 -> logical job name
 
-
-#WE HAVE TO CHANGE SOMETHING HERE ETI ;)
-#firstLine =wholeFile.filter(lambda x: "RecID" in x).collect()[0].replace('"', '').split(',')
-
-#filter out the first line from the initial RDD
-# entries = wholeFile.filter(lambda x: not ("RecID" in x))
 
 #split each line into an array of items
 entries = wholeFile.map(lambda x: x.split(','))
@@ -74,10 +74,6 @@ plt.show()
 
 
 
-
-#count lines
-
-#keep the RDD in memory
 sc.stop()
 
 

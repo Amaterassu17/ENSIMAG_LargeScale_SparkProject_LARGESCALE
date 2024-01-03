@@ -27,30 +27,10 @@ os.system("mkdir ./results/question8")
 #Depends on the file, we load the CSV file
 wholeFile1 = sc.textFile("./data/machine_events/*.csv")
 wholeFile2 = sc.textFile("./data/task_events/*.csv")
-#The first line of the file defines the name of each column in the cvs file
-#We store it as an array in the driver program
 
-
-#WE HAVE TO CHANGE SOMETHING HERE ETI ;)
-#firstLine =wholeFile.filter(lambda x: "RecID" in x).collect()[0].replace('"', '').split(',')
-
-#filter out the first line from the initial RDD
-# entries = wholeFile.filter(lambda x: not ("RecID" in x))
-
-#split each line into an array of items
 entries1 = wholeFile1.map(lambda x: x.split(',')).cache()
 entries2 = wholeFile2.map(lambda x: x.split(',')).cache()
-# randomMachine = entries1.map(lambda x: x[1]).take(1)
 
-# print(randomMachine)
-
-# step1 = entries1.filter(lambda x: x[1] == randomMachine).map(lambda x: (x[0],x[1], x[2], x[3], x[4], x[5])).collect()
-
-# print(step1)
-
-# with open("./results/question8/machineEvents.csv", "w") as f:
-#     for line in step1:
-#         f.write(line[0]+","+line[1]+","+line[2]+","+line[3]+","+line[4]+","+line[5]+"\n")
 
 def functionMap(x):
     uptime = 0
@@ -94,7 +74,6 @@ def functionMap(x):
     return (x[0], (uptime, downtime, totalFailures, MTTF, MTTR, availability))
 
 
-#step1 = entries1.map(lambda x: ((x[1]), (int(x[0]), int(x[2])))).sortBy(lambda x: x[1][0], ascending=True).groupByKey().map(lambda x: (x[0], list(x[1]))).map(lambda x: functionMap(x)).cache()
 
 start = time.time()
 step1 = entries1.map(lambda x: ((x[1]), (int(x[0]), int(x[2])))).sortBy(lambda x: x[1][0], ascending=True).groupByKey().map(lambda x: (x[0], list(x[1]))).map(lambda x: functionMap(x)).cache()

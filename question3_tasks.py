@@ -32,15 +32,19 @@ os.system("mkdir ./results/question3/task")
 #Depends on the file, we load the CSV file
 wholeFile = sc.textFile("./data/task_events/*.csv")
 
-#The first line of the file defines the name of each column in the cvs file
-#We store it as an array in the driver program
-
-
-#WE HAVE TO CHANGE SOMETHING HERE ETI ;)
-#firstLine =wholeFile.filter(lambda x: "RecID" in x).collect()[0].replace('"', '').split(',')
-
-#filter out the first line from the initial RDD
-# entries = wholeFile.filter(lambda x: not ("RecID" in x))
+# 0 -> timestamp,
+# 1 -> missing info,
+# 2 -> job ID,
+# 3 -> task index,
+# 4 -> machine ID,
+# 5 -> event type,
+# 6 -> user name,
+# 7 -> scheduling class,
+# 8 -> priority,
+# 9 -> resource request for CPU cores,
+# 10 -> resource request for RAM,
+# 11 -> resource request for local disk space,
+# 12 -> different-machine constraint
 
 #split each line into an array of items
 entries = wholeFile.map(lambda x: x.split(','))

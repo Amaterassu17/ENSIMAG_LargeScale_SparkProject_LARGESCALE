@@ -28,17 +28,44 @@ os.system("mkdir ./results/question7")
 wholeFile1 = sc.textFile("./data/task_events/*.csv")
 wholeFile2 = sc.textFile("./data/task_usage/*.csv")
 
-#The first line of the file defines the name of each column in the cvs file
-#We store it as an array in the driver program
+#TASK EVENTS
+# 0 -> timestamp,
+# 1 -> missing info,
+# 2 -> job ID,
+# 3 -> task index,
+# 4 -> machine ID,
+# 5 -> event type,
+# 6 -> user name,
+# 7 -> scheduling class,
+# 8 -> priority,
+# 9 -> resource request for CPU cores,
+# 10 -> resource request for RAM,
+# 11 -> resource request for local disk space,
+# 12 -> different-machine constraint
+
+#TASK USAGE
+# 0 -> start time,
+# 1 -> end time,
+# 2 -> job ID,
+# 3 -> task index,
+# 4 -> machine ID,
+# 5 -> CPU rate,
+# 6 -> canonical memory usage,
+# 7 -> assigned memory usage,
+# 8 -> unmapped page cache,
+# 9 -> total page cache,
+# 10 -> maximum memory usage,
+# 11 -> disk I/O time,
+# 12 -> local disk space usage,
+# 13 -> maximum CPU rate of task,
+# 14 -> maximum disk IO time,
+# 15 -> cycles per instruction (CPI),
+# 16 -> memory accesses per instruction (MAI),
+# 17 -> sample portion,
+# 18 -> aggregation type,
+# 19 -> sampled CPU usage
 
 
-#WE HAVE TO CHANGE SOMETHING HERE ETI ;)
-#firstLine =wholeFile.filter(lambda x: "RecID" in x).collect()[0].replace('"', '').split(',')
-
-#filter out the first line from the initial RDD
-# entries = wholeFile.filter(lambda x: not ("RecID" in x))
-
-#split each line into an array of items
 entries1 = wholeFile1.map(lambda x: x.split(',')).cache()
 entries2 = wholeFile2.map(lambda x: x.split(',')).cache()
 
@@ -64,23 +91,7 @@ with open("./results/question7/joinedTablesSortedByCPU.csv", "w") as f:
 with open("./results/question7/computationTimes.txt", "w") as f:
     f.write(str(duration))
 
-#### HERE THE FUN BEGINS
-# 0 -> time
-# 1 -> machine ID
-# 2 -> event type
-# 3 -> platform ID
-# 4 -> capacity: number of CPUs
-# 5 -> memory
-
-
-
 
 sc.stop()
-
-
-
-
-
-
 
 input("Press enter to exit ;)")
