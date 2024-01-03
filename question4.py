@@ -34,7 +34,7 @@ sc.setLogLevel("ERROR")
 os.system("rm -rf ./results/question4")
 os.system("mkdir ./results/question4")
 #Depends on the file, we load the CSV file
-wholeFile = sc.textFile("./data/task_events/part-00001-of-00500.csv")
+wholeFile = sc.textFile("./data/task_events/*.csv")
 
 
 #split each line into an array of items
@@ -83,6 +83,10 @@ with open("./results/question4/probabilities", 'w') as f:
     for i in (range(len(probabilities))):
         f.write(str(i) + ": " + str(probabilities[i]))
 
+with open("./results/question4/time_computation.txt", 'w') as f:
+    f.write(str(elapsed_time) + "s")
+
+
 
 # The probabilities for all the scheduling are
 # [0.0014897236153862004, 0.0016651736250952215, 0.002602749797808985, 0.010275224566534364] to mupltiply by 100 to get the percentage
@@ -99,19 +103,6 @@ with open("./results/question4/probabilities", 'w') as f:
 
 # count_number_tasks_per_scheduling_class = evicted_events.map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).cache()
 # count_events_per_scheduling = evicted_events.map(lambda x: (x[1], 1)).reduceByKey(lambda x, y: x + y).cache()
-
-
-
-#map result into a list
-
-
-# plt.bar(cpu_capabilities, quantities, align='center', alpha=0.5, color='green')
-# # plt.hist(cpus_mapped, bins ='auto', alpha=0.7, color='b', label = 'CPU capabilities')
-# plt.xlabel('CPU capabilities')
-# plt.ylabel('Frequency')
-# plt.title('CPU capabilities histogram')
-# # plt.legend(loc='upper right')
-# plt.savefig('./results/question1/cpu_capabilities.png')
 
 
 sc.stop()

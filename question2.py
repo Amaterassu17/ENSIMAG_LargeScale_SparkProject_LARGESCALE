@@ -36,8 +36,8 @@ def function1(x,y):
 
 def function2(x,y):
 
-    print(x)
-    print(y)
+    #print(x)
+    #print(y)
 
     timestamp_0 = x[0]
     timestamp_1 = y[0]
@@ -66,7 +66,7 @@ os.system("rm -rf ./results/question2")
 os.system("mkdir ./results/question2")
 
 #Depends on the file, we load the CSV file
-wholeFile = sc.textFile("./data/machine_events/*.csv").cache()
+wholeFile = sc.textFile("./data/machine_events/*.csv")
 
 #The first line of the file defines the name of each column in the cvs file
 #We store it as an array in the driver program
@@ -117,7 +117,7 @@ timestamps_maximum = timestamps.sortBy(lambda x: x[0], False).first()[0]
 machine_count = step1.filter(lambda x: x[0] == 0).map(lambda x: x[1][0]).distinct().count()
 
 total_timestamps = timestamps_maximum * machine_count
-print(total_timestamps)
+#print(total_timestamps)
 machine_and_timestamps = timestamps.map(lambda x: (x[1][0], (x[0], x[1][1], 0))).cache()
 something = machine_and_timestamps.reduceByKey(function1).map(lambda x: (None, x[0])).reduceByKey(lambda x,y: x+y).map(lambda x: x[1]).collect()[0]
 downtime_percentage = 100 * something / total_timestamps

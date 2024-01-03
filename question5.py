@@ -85,6 +85,10 @@ duration = end_time - start_time
 with open("./results/question5/time_computation.txt", "w") as f:
     f.write(str(duration) + " s")
 
+with open("./results/question5/thresholds_results.txt", "w") as f:
+    for i in range(len(thresholds)):
+        f.write(str(thresholds[i]) + " " + str(results[i]) + "\n")
+
 plt.bar(thresholds, results, align='center', alpha=0.5, color='green')
 
 plt.xlabel('Number of unique machines')
@@ -95,7 +99,7 @@ plt.xticks(thresholds)
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
 plt.show()
-
+plt.savefig('./results/question5/percentage_of_jobs_tasks_on_same_machines.png')
 
 
 

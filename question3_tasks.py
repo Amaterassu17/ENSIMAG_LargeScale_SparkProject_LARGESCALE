@@ -56,7 +56,7 @@ print("Time for the first part: {}".format(end-start))
 number_per_scheduling.saveAsTextFile("./results/question3/task/splitResults")
 number_collected = number_per_scheduling.collect()
 
-with open("./results/question3/task/time_computation.txt", 'f') as f:
+with open("./results/question3/task/time_computation.txt", 'w') as f:
     f.write(str(duration) + "s")
 
 scheduling_class, frequency = zip(*number_collected)
