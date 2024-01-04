@@ -3,7 +3,7 @@ import sys
 import findspark
 findspark.init()
 
-from pyspark import SparkContext
+from pyspark import SparkContext, SparkConf
 import time
 import re
 import os
@@ -17,7 +17,8 @@ import time
 #### Driver program
     
 localVar = 10
-sc = SparkContext("local["+ str(localVar) + "]")
+conf = SparkConf().setAppName("question7").setMaster("local["+ str(localVar) + "]").setAppName("question6").set("spark.driver.memory", "6g")
+sc = SparkContext(conf=conf)
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
@@ -25,8 +26,10 @@ os.system("rm -rf ./results/question7")
 os.system("mkdir ./results/question7")
 
 #Depends on the file, we load the CSV file
-wholeFile1 = sc.textFile("./data/task_events/*.csv")
-wholeFile2 = sc.textFile("./data/task_usage/*.csv")
+# wholeFile1 = sc.textFile("./data/task_events/*.csv")
+wholeFile1 = sc.textFile("./data/task_events/part-0000*-of-00500.csv")
+# wholeFile2 = sc.textFile("./data/task_usage/*.csv")
+wholeFile2 = sc.textFile("./data/task_usage/part-0000*-of-00500.csv")
 
 #TASK EVENTS
 # 0 -> timestamp,
@@ -74,24 +77,67 @@ entries2 = wholeFile2.map(lambda x: x.split(',')).cache()
 
 #keep the RDD in memory
 
-start = time.time()
-table1 = entries1.filter(lambda x: x[9]!='' and x[5] == '2').map(lambda x: ((x[2], x[3], x[4]), (x[0], x[1])))
-table2 = entries2.map(lambda x: ((x[2], x[3], x[4]), (x[13], x[10], x[14])))
+# start = time.time()
+# table1 = entries1.filter(lambda x: x[9]!='' and  x[5] == "2").map(lambda x: ((x[2], x[3], x[4]), (x[0], x[5])))
+# # table2 = entries2.filter(lambda x: x[19]!= "0").map(lambda x: ((x[2], x[3], x[4]), (x[19], x[10], x[14])))
+# table2 = entries2.filter(lambda x: x[19]!= "0").map(lambda x: ((x[2], x[3], x[4]), (x[19])))
 
-table = table1.join(table2).map(lambda x: (x[0], (x[1][0][0], x[1][0][1], x[1][1][0], x[1][1][1], x[1][1][2]))).sortBy(lambda x: x[1][2], ascending=False).sortBy(lambda x: x[1][1], ascending=False).sortBy(lambda x: x[1][0], ascending=False).take(200)
-end = time.time()
+# #table = table1.join(table2).map(lambda x: (x[0], (x[1][0][0], x[1][0][1], x[1][1][0]))).sortBy(lambda x: x[1][2], ascending=False).sortBy(lambda x: x[1][1], ascending=False).sortBy(lambda x: x[1][0], ascending=False).take(200)
+# table = table1.join(table2).map(lambda x: (x[0], (x[1][0][0], x[1][0][1], x[1][1][0]))).cache()
+# end = time.time()
 
-duration = end - start
+# #step1
+# #for a timestamp there could be multiple evictione events, we reduce by key by averaging the number of CPU sampled and then from this see if >= 7 (statistically for us high usage) and then from this we see how many evicted events are effectively there
+# step1 = table.map(lambda x: (x[0], (x[1][2])))
 
-with open("./results/question7/joinedTablesSortedByCPU.csv", "w") as f:
-    f.write("jobId,taskIndex,machineId,startTime, endTime, maxCPU, maxMem, maxDisk\n")
-    for line in table:
-        f.write(line[0][0]+","+line[0][1]+","+line[0][2]+","+line[1][0]+","+line[1][1]+","+line[1][2]+","+line[1][3]+","+line[1][4]+"\n")
-
-with open("./results/question7/computationTimes.txt", "w") as f:
-    f.write(str(duration))
+# duration = end - start
 
 
-sc.stop()
 
-input("Press enter to exit ;)")
+
+
+# with open("./results/question7/joinedTablesSortedByCPU_NonEvict.csv", "w") as f:
+#     f.write("jobId,taskIndex,machineId,timestamp,event_type, sampledCPU\n")
+#     for line in table:
+#         f.write(line[0][0]+","+line[0][1]+","+line[0][2]+","+line[1][0]+","+line[1][1]+","+line[1][2]+"\n")
+
+# with open("./results/question7/computationTimes.txt", "w") as f:
+#     f.write(str(duration)+ "\n")
+
+
+
+table1 = entries1.filter(lambda x: x[9]!='' and x[5] == "2").map(lambda x: ((x[2], x[3], x[4]), (x[0])))
+table2 = entries2.map(lambda x: ((x[2], x[3], x[4]), ((x[5]))))
+
+table = table1.join(table2).map(lambda x: ((x[0][0],x[0][1],x[0][2],x[1][1][0]), (x[1][0][0], 1))).reduceByKey(lambda x,y: (float(x[0])+float(y[0]), x[1]+y[1])).map(lambda x: (x[0][2], float(x[1][0])/float(x[1][1])))
+# table = table1.join(table2).map(lambda x: ((x[0][0],x[0][1],x[0][2],x[1][1][0]), (x[1][0][0], 1))).take(1)
+
+#map with counter for all events and a counter that is 1 only if x[1] >= 7
+step2 = table.map(lambda x: (x[0], (x[1],1, 1 if x[1] >= 7 else 0))).reduceByKey(lambda x,y: (x[0]+y[0], x[1]+y[1], x[2]+y[2])).map(lambda x: (int(x[0]), float(x[1][2])/float(x[1][1]))).sortBy(lambda x: x[0], ascending=True).collect()
+
+
+# graph it with matplotlib
+print(step2[0:100])
+
+plt.locator_params(axis='x', nbins=10)
+# plot results in a 3 different line graphs with requested CPU, CPU
+
+machine_id, average_evict_CPURATE = zip(*step2)
+
+
+plt.plot(machine_id, average_evict_CPURATE, marker='', color='r', ls='-')
+plt.xlabel('machineID Ascending')
+plt.ylabel('averageCPU usage')
+plt.title('Evicted events machine average CPU usage')
+plt.savefig("./results/question7/averageCPUEvictMachines.png")
+plt.show()
+
+# print(step2)
+
+# with open("./results/question7/avgCPU.csv", "w") as f:
+#     f.write("jobId,taskIndex,machineId,avgCPU\n")
+#     for line in table:
+#         f.write(line[0][0]+","+line[0][1]+","+line[0][2]+","+str(line[1])+"\n")
+# sc.stop()
+
+
