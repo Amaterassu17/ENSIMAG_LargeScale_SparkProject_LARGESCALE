@@ -22,7 +22,7 @@ sc = SparkContext(conf=conf)
 sc.setLogLevel("ERROR")
 
 #remove output file if it already exists
-os.system("rm ./results/question7/averageCPUEvictMachines.png")
+os.system("rm ./results/question7/averageCPU_NonEvictMachines.png")
 os.system("mkdir ./results/question7")
 
 #Depends on the file, we load the CSV file
@@ -106,7 +106,7 @@ entries2 = wholeFile2.map(lambda x: x.split(',')).cache()
 
 
 
-table1 = entries1.filter(lambda x: x[9]!='' and x[5] == "2").map(lambda x: ((x[2], x[3], x[4]), (x[0])))
+table1 = entries1.filter(lambda x: x[9]!='' and x[5] != "2").map(lambda x: ((x[2], x[3], x[4]), (x[0])))
 table2 = entries2.map(lambda x: ((x[2], x[3], x[4]), ((x[5]))))
 
 table = table1.join(table2).map(lambda x: ((x[0][0],x[0][1],x[0][2],x[1][1][0]), (x[1][0][0], 1))).reduceByKey(lambda x,y: (float(x[0])+float(y[0]), x[1]+y[1])).map(lambda x: (x[0][2], float(x[1][0])/float(x[1][1])))
@@ -129,7 +129,7 @@ plt.plot(machine_id, average_evict_CPURATE, marker='', color='r', ls='-')
 plt.xlabel('machineID Ascending')
 plt.ylabel('averageCPU usage')
 plt.title('Evicted events machine average CPU usage')
-plt.savefig("./results/question7/averageCPUEvictMachines.png")
+plt.savefig("./results/question7/averageCPU_NonEvictMachines.png")
 plt.show()
 
 # print(step2)
