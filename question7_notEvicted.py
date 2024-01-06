@@ -128,7 +128,7 @@ machine_id, average_evict_CPURATE = zip(*step2)
 plt.plot(machine_id, average_evict_CPURATE, marker='', color='r', ls='-')
 plt.xlabel('machineID Ascending')
 plt.ylabel('averageCPU usage')
-plt.title('Evicted events machine average CPU usage')
+plt.title('Not Evicted events machine average CPU usage')
 plt.savefig("./results/question7/averageCPU_NonEvictMachines.png")
 plt.show()
 
